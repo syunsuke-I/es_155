@@ -4,3 +4,17 @@
 .abc-preview svg text {
   fill: #ffffff !important;
 }
+
+/* シンタックスハイライトの色定義 */
+.abc-meta-key {
+  color: #60a5fa; /* 青色 - メタ情報のキー (X:, T:, M:, K:など) */
+  font-weight: 600;
+}
+
+.abc-meta-value {
+  color: #a78bfa; /* 紫色 - メタ情報の値 */
+}
+
+.abc-text {
+  color: #ffffff; /* 白色 - 通常のテキスト */
+}
