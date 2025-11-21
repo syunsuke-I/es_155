@@ -268,6 +268,35 @@ describe('highlightMusicLine', () => {
     expect(result).toContain('abc-slur-level-1');
   });
 
+  it('should handle tuplet followed by slur', () => {
+    const result = highlightMusicLine('(3(CDE)');
+    expect(result).toContain('<span class="abc-tuplet">(3</span>');
+    expect(result).toContain('<span class="abc-slur abc-slur-level-0">(</span>');
+    expect(result).toContain('<span class="abc-slur abc-slur-level-0">)</span>');
+  });
+
+  it('should handle slur followed by tuplet', () => {
+    const result = highlightMusicLine('((3CDE)');
+    expect(result).toContain('<span class="abc-slur abc-slur-level-0">(</span>');
+    expect(result).toContain('<span class="abc-tuplet">(3</span>');
+    expect(result).toContain('<span class="abc-slur abc-slur-level-0">)</span>');
+  });
+
+  it('should handle consecutive tuplets', () => {
+    const result = highlightMusicLine('(3CDE (3FGA');
+    const tupletMatches = result.match(/<span class="abc-tuplet">\(3<\/span>/g);
+    expect(tupletMatches).toHaveLength(2);
+  });
+
+  it('should handle tuplet with nested slurs', () => {
+    const result = highlightMusicLine('(3(AB))');
+    expect(result).toContain('<span class="abc-tuplet">(3</span>');
+    expect(result).toContain('abc-slur-level-0');
+    // 2つの閉じ括弧が両方スラーとして扱われる
+    const closingSlurs = result.match(/abc-slur-level-0">\)<\/span>/g);
+    expect(closingSlurs).toHaveLength(2);
+  });
+
   it('should highlight chord brackets', () => {
     const result = highlightMusicLine('[CEG]');
     expect(result).toContain('<span class="abc-chord">[</span>');
