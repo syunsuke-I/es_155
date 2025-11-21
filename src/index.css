@@ -32,6 +32,30 @@
   color: #ec4899; /* ピンク色 - 和音括弧 ([...]) */
 }
 
+.abc-slur {
+  font-weight: 700;
+}
+
+.abc-slur-level-0 {
+  color: #ef4444; /* 赤色 - スラーレベル0（外側） */
+}
+
+.abc-slur-level-1 {
+  color: #eab308; /* 黄色 - スラーレベル1（1段ネスト） */
+}
+
+.abc-slur-level-2 {
+  color: #d946ef; /* マゼンタ - スラーレベル2（2段ネスト） */
+}
+
+.abc-slur-level-3 {
+  color: #06b6d4; /* シアン - スラーレベル3（3段ネスト） */
+}
+
+.abc-slur-level-4 {
+  color: #84cc16; /* ライム - スラーレベル4（4段ネスト） */
+}
+
 .abc-comment {
   color: #6b7280; /* グレー色 - コメント (%で始まる行) */
   font-style: italic;

@@ -4,6 +4,7 @@ import {
   ABC_ACCIDENTAL_PATTERN,
   ABC_BAR_PATTERN,
   ABC_CHORD_BRACKET_PATTERN,
+  ABC_SLUR_PATTERN,
   ABC_COMMENT_PATTERN,
 } from '../types/abc';
 
@@ -35,6 +36,7 @@ export const highlightAbc = (code: string): string => {
 const highlightMusicLine = (line: string): string => {
   let result = '';
   let i = 0;
+  let slurLevel = 0; // スラーのネストレベル
 
   while (i < line.length) {
     const char = line[i];
@@ -60,6 +62,21 @@ const highlightMusicLine = (line: string): string => {
     // 臨時記号
     if (ABC_ACCIDENTAL_PATTERN.test(char)) {
       result += `<span class="abc-accidental">${escapeHtml(char)}</span>`;
+      i++;
+      continue;
+    }
+
+    // スラー（ネストレベルに応じて色分け）
+    if (ABC_SLUR_PATTERN.test(char)) {
+      if (char === '(') {
+        // 開始括弧: 現在のレベルで色を適用してからレベルを上げる
+        result += `<span class="abc-slur abc-slur-level-${slurLevel % 5}">${escapeHtml(char)}</span>`;
+        slurLevel++;
+      } else if (char === ')') {
+        // 終了括弧: レベルを下げてからそのレベルで色を適用
+        slurLevel = Math.max(0, slurLevel - 1);
+        result += `<span class="abc-slur abc-slur-level-${slurLevel % 5}">${escapeHtml(char)}</span>`;
+      }
       i++;
       continue;
     }
