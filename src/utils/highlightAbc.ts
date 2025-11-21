@@ -9,6 +9,7 @@ import {
   ABC_DURATION_PATTERN,
   ABC_REST_PATTERN,
   ABC_TIE_PATTERN,
+  ABC_ORNAMENT_PATTERN,
   ABC_COMMENT_PATTERN,
 } from '../types/abc';
 
@@ -295,6 +296,27 @@ export const parseTie = (line: string, index: number): ParseResult | null => {
   return null;
 };
 
+// 装飾記号のパース
+export const parseOrnament = (line: string, index: number): ParseResult | null => {
+  const char = line[index];
+
+  // 装飾記号パターンにマッチするかチェック
+  if (!ABC_ORNAMENT_PATTERN.test(char)) {
+    return null;
+  }
+
+  // '.' は破線タイ '.-' の可能性があるので、次の文字をチェック
+  if (char === '.' && index + 1 < line.length && line[index + 1] === '-') {
+    // これは破線タイなので、ここでは処理しない
+    return null;
+  }
+
+  return {
+    html: `<span class="abc-ornament">${escapeHtml(char)}</span>`,
+    nextIndex: index + 1,
+  };
+};
+
 // 楽譜行の文字単位ハイライト
 export const highlightMusicLine = (line: string): string => {
   let result = '';
@@ -314,6 +336,13 @@ export const highlightMusicLine = (line: string): string => {
     if (accidental) {
       result += accidental.html;
       i = accidental.nextIndex;
+      continue;
+    }
+
+    const ornament = parseOrnament(line, i);
+    if (ornament) {
+      result += ornament.html;
+      i = ornament.nextIndex;
       continue;
     }
 

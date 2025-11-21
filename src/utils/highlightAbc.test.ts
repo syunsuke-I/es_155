@@ -8,6 +8,7 @@ import {
   parseChordBracket,
   parseRest,
   parseTie,
+  parseOrnament,
   highlightMusicLine,
   highlightAbc,
 } from './highlightAbc';
@@ -324,6 +325,66 @@ describe('parseTie', () => {
   });
 });
 
+describe('parseOrnament', () => {
+  it('should parse staccato .', () => {
+    const result = parseOrnament('.C', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-ornament">.</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse trill ~', () => {
+    const result = parseOrnament('~C', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-ornament">~</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse fermata H', () => {
+    const result = parseOrnament('HC', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-ornament">H</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse trill T', () => {
+    const result = parseOrnament('TC', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-ornament">T</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse upbow u', () => {
+    const result = parseOrnament('uC', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-ornament">u</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse downbow v', () => {
+    const result = parseOrnament('vC', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-ornament">v</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should return null for dotted tie .-', () => {
+    const result = parseOrnament('.-', 0);
+    expect(result).toBeNull();
+  });
+
+  it('should return null for non-ornament characters', () => {
+    expect(parseOrnament('C', 0)).toBeNull();
+    expect(parseOrnament('|', 0)).toBeNull();
+  });
+});
+
 describe('highlightMusicLine', () => {
   it('should highlight simple note sequence', () => {
     const result = highlightMusicLine('C D E F');
@@ -437,6 +498,21 @@ describe('highlightMusicLine', () => {
     const result = highlightMusicLine('C-|C');
     expect(result).toContain('<span class="abc-tie">-</span>');
     expect(result).toContain('<span class="abc-bar">|</span>');
+  });
+
+  it('should highlight ornaments', () => {
+    const result = highlightMusicLine('.C ~D TC uE vF');
+    expect(result).toContain('<span class="abc-ornament">.</span>');
+    expect(result).toContain('<span class="abc-ornament">~</span>');
+    expect(result).toContain('<span class="abc-ornament">T</span>');
+    expect(result).toContain('<span class="abc-ornament">u</span>');
+    expect(result).toContain('<span class="abc-ornament">v</span>');
+  });
+
+  it('should distinguish staccato from dotted tie', () => {
+    const result = highlightMusicLine('.C C.-C');
+    expect(result).toContain('<span class="abc-ornament">.</span>');
+    expect(result).toContain('<span class="abc-tie abc-tie-dotted">.-</span>');
   });
 
   it('should handle complex music line', () => {
