@@ -13,6 +13,7 @@ import {
   parseDecoration,
   parseGraceNote,
   parseVoltaBracket,
+  parseBrokenRhythm,
   highlightMusicLine,
   highlightAbc,
 } from './highlightAbc';
@@ -617,6 +618,54 @@ describe('parseVoltaBracket', () => {
   });
 });
 
+describe('parseBrokenRhythm', () => {
+  it('should parse single > (dotted first note)', () => {
+    const result = parseBrokenRhythm('>B', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-broken-rhythm">&gt;</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse single < (dotted second note)', () => {
+    const result = parseBrokenRhythm('<B', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-broken-rhythm">&lt;</span>',
+      nextIndex: 1,
+    });
+  });
+
+  it('should parse double >> (double-dotted first note)', () => {
+    const result = parseBrokenRhythm('>>B', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-broken-rhythm">&gt;&gt;</span>',
+      nextIndex: 2,
+    });
+  });
+
+  it('should parse double << (double-dotted second note)', () => {
+    const result = parseBrokenRhythm('<<B', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-broken-rhythm">&lt;&lt;</span>',
+      nextIndex: 2,
+    });
+  });
+
+  it('should parse triple >>> (triple-dotted first note)', () => {
+    const result = parseBrokenRhythm('>>>B', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-broken-rhythm">&gt;&gt;&gt;</span>',
+      nextIndex: 3,
+    });
+  });
+
+  it('should return null for non-broken-rhythm characters', () => {
+    expect(parseBrokenRhythm('C', 0)).toBeNull();
+    expect(parseBrokenRhythm('|', 0)).toBeNull();
+    expect(parseBrokenRhythm('A', 0)).toBeNull();
+  });
+});
+
 describe('highlightMusicLine', () => {
   it('should highlight simple note sequence', () => {
     const result = highlightMusicLine('C D E F');
@@ -792,6 +841,16 @@ describe('highlightMusicLine', () => {
     expect(result).toContain('<span class="abc-note">A</span>');
   });
 
+  it('should highlight broken rhythm in music line', () => {
+    const result = highlightMusicLine('A>B C<D E>>F G<<A');
+    expect(result).toContain('<span class="abc-broken-rhythm">&gt;</span>');
+    expect(result).toContain('<span class="abc-broken-rhythm">&lt;</span>');
+    expect(result).toContain('<span class="abc-broken-rhythm">&gt;&gt;</span>');
+    expect(result).toContain('<span class="abc-broken-rhythm">&lt;&lt;</span>');
+    expect(result).toContain('<span class="abc-note">A</span>');
+    expect(result).toContain('<span class="abc-note">B</span>');
+  });
+
   it('should handle complex music line', () => {
     const result = highlightMusicLine('^C2 D/2 | [CEG] (3DEF | (AB) |');
     expect(result).toContain('abc-accidental');
@@ -843,7 +902,7 @@ T:Complete Test
 M:4/4
 K:C
 % This tests all features
-!p!"C"^C2 z/2 | [CEG] (3DEF.- |[1 "Am"(AB) ~C {g}!fermata!G :|[2 A4 |`;
+!p!"C"^C2 z/2 | [CEG] (3DEF.- |[1 "Am"(AB)>C ~C {g}!fermata!G :|[2 A4 |`;
     const result = highlightAbc(abc);
 
     // Meta fields
@@ -895,6 +954,9 @@ K:C
 
     // Ornaments
     expect(result).toContain('abc-ornament');
+
+    // Broken rhythm
+    expect(result).toContain('abc-broken-rhythm');
 
     // Bar lines
     expect(result).toContain('abc-bar');

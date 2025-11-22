@@ -48,6 +48,11 @@
   color: #fbbf24; /* 黄色 - 混合分数 (3/2, 5/4 など) */
 }
 
+.abc-broken-rhythm {
+  color: #10b981; /* 緑色 - ブロークンリズム (>, <, >>, << など) */
+  font-weight: 700;
+}
+
 .abc-bar {
   color: #06b6d4; /* シアン色 - 小節線 (|, ||, |:, :|, ::) */
   font-weight: 600;

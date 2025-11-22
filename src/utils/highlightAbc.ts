@@ -14,6 +14,7 @@ import {
   ABC_DECORATION_PATTERN,
   ABC_GRACE_NOTE_PATTERN,
   ABC_VOLTA_BRACKET_PATTERN,
+  ABC_BROKEN_RHYTHM_PATTERN,
   ABC_COMMENT_PATTERN,
 } from '../types/abc';
 
@@ -456,6 +457,34 @@ export const parseVoltaBracket = (line: string, index: number): ParseResult | nu
   };
 };
 
+// ブロークンリズムのパース
+export const parseBrokenRhythm = (line: string, index: number): ParseResult | null => {
+  const char = line[index];
+
+  // ブロークンリズムは > または < で始まる
+  if (char !== '>' && char !== '<') {
+    return null;
+  }
+
+  // 連続する > または < を取得
+  let j = index + 1;
+  while (j < line.length && line[j] === char) {
+    j++;
+  }
+
+  const brokenRhythm = line.substring(index, j);
+
+  // パターンチェック
+  if (!ABC_BROKEN_RHYTHM_PATTERN.test(brokenRhythm)) {
+    return null;
+  }
+
+  return {
+    html: `<span class="abc-broken-rhythm">${escapeHtml(brokenRhythm)}</span>`,
+    nextIndex: j,
+  };
+};
+
 // 楽譜行の文字単位ハイライト
 export const highlightMusicLine = (line: string): string => {
   let result = '';
@@ -527,6 +556,13 @@ export const highlightMusicLine = (line: string): string => {
     if (noteWithDuration) {
       result += noteWithDuration.html;
       i = noteWithDuration.nextIndex;
+      continue;
+    }
+
+    const brokenRhythm = parseBrokenRhythm(line, i);
+    if (brokenRhythm) {
+      result += brokenRhythm.html;
+      i = brokenRhythm.nextIndex;
       continue;
     }
 

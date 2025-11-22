@@ -51,4 +51,5 @@ export const ABC_CHORD_SYMBOL_PATTERN = /^"[^"]*"$/; // コード記号 ("C", "A
 export const ABC_DECORATION_PATTERN = /^![^!]+!$/; // 装飾記号 (!trill!, !fermata!, !p!, !f! など)
 export const ABC_GRACE_NOTE_PATTERN = /^\{[^}]+\}$/; // 装飾音 ({g}A, {/g}C, {gef}e など)
 export const ABC_VOLTA_BRACKET_PATTERN = /^\[\d+$/; // 反復記号 ([1, [2, [3 など)
+export const ABC_BROKEN_RHYTHM_PATTERN = /^[<>]+$/; // ブロークンリズム (>, <, >>, << など)
 export const ABC_COMMENT_PATTERN = /^%.*$/;
