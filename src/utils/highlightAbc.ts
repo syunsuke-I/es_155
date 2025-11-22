@@ -610,6 +610,10 @@ export const highlightAbc = (code: string): string => {
       const match = line.match(ABC_FIELD_PATTERN);
       if (match) {
         const [, key, value] = match;
+        // 歌詞フィールド (w:, W:) は別のクラスを使用
+        if (key === 'w:' || key === 'W:') {
+          return `<span class="abc-lyrics-key">${escapeHtml(key)}</span><span class="abc-lyrics-value">${escapeHtml(value)}</span>`;
+        }
         return `<span class="abc-meta-key">${escapeHtml(key)}</span><span class="abc-meta-value">${escapeHtml(value)}</span>`;
       }
 

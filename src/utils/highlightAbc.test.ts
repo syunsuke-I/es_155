@@ -872,6 +872,17 @@ describe('highlightAbc', () => {
     expect(result).toContain('<span class="abc-meta-value">Test</span>');
   });
 
+  it('should highlight lyrics fields with different colors', () => {
+    const result = highlightAbc('w:Hello world\nW:After the tune');
+    expect(result).toContain('<span class="abc-lyrics-key">w:</span>');
+    expect(result).toContain('<span class="abc-lyrics-value">Hello world</span>');
+    expect(result).toContain('<span class="abc-lyrics-key">W:</span>');
+    expect(result).toContain('<span class="abc-lyrics-value">After the tune</span>');
+    // 歌詞フィールドはメタフィールドクラスを使わない
+    expect(result).not.toContain('<span class="abc-meta-key">w:</span>');
+    expect(result).not.toContain('<span class="abc-meta-key">W:</span>');
+  });
+
   it('should highlight comment lines', () => {
     const result = highlightAbc('% This is a comment');
     expect(result).toContain('<span class="abc-comment">% This is a comment</span>');

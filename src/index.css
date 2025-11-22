@@ -15,6 +15,15 @@
   color: #a78bfa; /* 紫色 - メタ情報の値 */
 }
 
+.abc-lyrics-key {
+  color: #fb7185; /* ローズピンク - 歌詞フィールドのキー (w:, W:) */
+  font-weight: 600;
+}
+
+.abc-lyrics-value {
+  color: #fda4af; /* 薄いローズピンク - 歌詞テキスト */
+}
+
 .abc-note {
   color: #ffffff; /* 白色 - 音符 (C, D, E, F, G, A, B) */
 }
