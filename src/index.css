@@ -27,7 +27,6 @@
 .abc-note {
   color: #ffffff; /* 白色 - 音符 (C, D, E, F, G, A, B) */
 }
-
 .abc-octave-high {
   color: #93c5fd; /* 明るい青 - 高オクターブ記号 (', '', etc.) */
   font-weight: 600;
