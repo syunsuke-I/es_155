@@ -295,21 +295,25 @@ export const parseRest = (line: string, index: number): ParseResult | null => {
 export const parseTie = (line: string, index: number): ParseResult | null => {
   const char = line[index];
 
-  // タイは - または .- (破線タイ)
-  if (char === '-') {
-    return {
-      html: `<span class="abc-tie">${escapeHtml(char)}</span>`,
-      nextIndex: index + 1,
-    };
-  }
-
-  // 破線タイ: .-
+  // 破線タイ: .- を先にチェック（より長いパターン優先）
   if (char === '.' && index + 1 < line.length && line[index + 1] === '-') {
     const tie = '.-';
-    return {
-      html: `<span class="abc-tie abc-tie-dotted">${escapeHtml(tie)}</span>`,
-      nextIndex: index + 2,
-    };
+    if (ABC_TIE_PATTERN.test(tie)) {
+      return {
+        html: `<span class="abc-tie abc-tie-dotted">${escapeHtml(tie)}</span>`,
+        nextIndex: index + 2,
+      };
+    }
+  }
+
+  // 通常のタイ: -
+  if (char === '-') {
+    if (ABC_TIE_PATTERN.test(char)) {
+      return {
+        html: `<span class="abc-tie">${escapeHtml(char)}</span>`,
+        nextIndex: index + 1,
+      };
+    }
   }
 
   return null;
