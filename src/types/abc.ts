@@ -49,4 +49,5 @@ export const ABC_TIE_PATTERN = /^\.?-$/; // タイ (-, .-破線タイ)
 export const ABC_ORNAMENT_PATTERN = /[.~HLMOPSTuv]/; // 装飾記号 (., ~, H, L, M, O, P, S, T, u, v)
 export const ABC_CHORD_SYMBOL_PATTERN = /^"[^"]*"$/; // コード記号 ("C", "Am7", "Dm7/F" など)
 export const ABC_DECORATION_PATTERN = /^![^!]+!$/; // 装飾記号 (!trill!, !fermata!, !p!, !f! など)
+export const ABC_GRACE_NOTE_PATTERN = /^\{[^}]+\}$/; // 装飾音 ({g}A, {/g}C, {gef}e など)
 export const ABC_COMMENT_PATTERN = /^%.*$/;

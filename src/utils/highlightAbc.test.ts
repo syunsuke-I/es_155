@@ -11,6 +11,7 @@ import {
   parseOrnament,
   parseChordSymbol,
   parseDecoration,
+  parseGraceNote,
   highlightMusicLine,
   highlightAbc,
 } from './highlightAbc';
@@ -521,6 +522,57 @@ describe('parseDecoration', () => {
   });
 });
 
+describe('parseGraceNote', () => {
+  it('should parse simple grace note {g}', () => {
+    const result = parseGraceNote('{g}', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-grace-note">{g}</span>',
+      nextIndex: 3,
+    });
+  });
+
+  it('should parse acciaccatura {/g}', () => {
+    const result = parseGraceNote('{/g}', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-grace-note">{/g}</span>',
+      nextIndex: 4,
+    });
+  });
+
+  it('should parse multi-note grace {gef}', () => {
+    const result = parseGraceNote('{gef}', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-grace-note">{gef}</span>',
+      nextIndex: 5,
+    });
+  });
+
+  it('should parse acciaccatura multi-note {/gagab}', () => {
+    const result = parseGraceNote('{/gagab}', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-grace-note">{/gagab}</span>',
+      nextIndex: 8,
+    });
+  });
+
+  it('should parse grace note with accidental {^g}', () => {
+    const result = parseGraceNote('{^g}', 0);
+    expect(result).toEqual({
+      html: '<span class="abc-grace-note">{^g}</span>',
+      nextIndex: 4,
+    });
+  });
+
+  it('should return null for unclosed grace note', () => {
+    expect(parseGraceNote('{g', 0)).toBeNull();
+  });
+
+  it('should return null for non-grace-note characters', () => {
+    expect(parseGraceNote('C', 0)).toBeNull();
+    expect(parseGraceNote('|', 0)).toBeNull();
+  });
+});
+
 describe('highlightMusicLine', () => {
   it('should highlight simple note sequence', () => {
     const result = highlightMusicLine('C D E F');
@@ -679,6 +731,14 @@ describe('highlightMusicLine', () => {
     expect(result).toContain('<span class="abc-note">A</span>');
   });
 
+  it('should highlight grace notes in music line', () => {
+    const result = highlightMusicLine('{g}A {/g}C |');
+    expect(result).toContain('<span class="abc-grace-note">{g}</span>');
+    expect(result).toContain('<span class="abc-grace-note">{/g}</span>');
+    expect(result).toContain('<span class="abc-note">A</span>');
+    expect(result).toContain('<span class="abc-note">C</span>');
+  });
+
   it('should handle complex music line', () => {
     const result = highlightMusicLine('^C2 D/2 | [CEG] (3DEF | (AB) |');
     expect(result).toContain('abc-accidental');
@@ -730,7 +790,7 @@ T:Complete Test
 M:4/4
 K:C
 % This tests all features
-!p!"C"^C2 z/2 | [CEG] (3DEF.- | "Am"(AB) ~C !fermata!G |`;
+!p!"C"^C2 z/2 | [CEG] (3DEF.- | "Am"(AB) ~C {g}!fermata!G |`;
     const result = highlightAbc(abc);
 
     // Meta fields
@@ -744,6 +804,10 @@ K:C
     expect(result).toContain('abc-decoration');
     expect(result).toContain('!p!');
     expect(result).toContain('!fermata!');
+
+    // Grace notes
+    expect(result).toContain('abc-grace-note');
+    expect(result).toContain('{g}');
 
     // Chord symbols
     expect(result).toContain('abc-chord-symbol');
