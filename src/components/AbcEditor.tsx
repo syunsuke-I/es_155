@@ -24,8 +24,30 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
 
   // テーマごとの色設定
   const colors = theme === 'dark'
-    ? { bg: '#161616', editorBg: '#1a1a1a', lineNumBg: '#0f0f0f', caretColor: '#fff', placeholderColor: '#64748b' }
-    : { bg: '#f5f5f5', editorBg: '#ffffff', lineNumBg: '#eeeeee', caretColor: '#000', placeholderColor: '#999999' };
+    ? {
+        bg: '#161616',
+        editorBg: '#1a1a1a',
+        lineNumBg: '#0f0f0f',
+        caretColor: '#fff',
+        placeholderColor: '#64748b',
+        errorHeader: '#94a3b8',
+        errorIcon: '#f59e0b',
+        errorLocation: '#22d3ee',
+        errorMessage: '#fcd34d',
+        errorHighlight: 'rgba(245, 158, 11, 0.2)'
+      }
+    : {
+        bg: '#f5f5f5',
+        editorBg: '#ffffff',
+        lineNumBg: '#eeeeee',
+        caretColor: '#000',
+        placeholderColor: '#999999',
+        errorHeader: '#64748b',
+        errorIcon: '#d97706',
+        errorLocation: '#0891b2',
+        errorMessage: '#b45309',
+        errorHighlight: '#fde047'
+      };
 
   // オートコンプリート機能
   const {
@@ -99,7 +121,8 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
                         <div key={lineIndex}>
                           <span style={{ opacity: 0 }}>{before}</span>
                           <span
-                            className="bg-amber-500/20 px-1 rounded"
+                            className="px-1 rounded"
+                            style={{ backgroundColor: colors.errorHighlight }}
                             dangerouslySetInnerHTML={{ __html: highlightedMeasure }}
                           />
                           <span style={{ opacity: 0 }}>{after}</span>
@@ -145,22 +168,27 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
             className="border-t border-slate-600 px-4 py-3 text-xs font-mono overflow-auto"
             style={{ backgroundColor: colors.lineNumBg, maxHeight: '8rem' }}
           >
-            <div className="text-slate-500 mb-2 text-[10px] uppercase tracking-wide">
+            <div className="mb-2 text-[10px] uppercase tracking-wide" style={{ color: colors.errorHeader }}>
               Validation Errors ({validationErrors.length})
             </div>
             {validationErrors.map((error, index) => (
               <div
                 key={index}
-                className="flex items-start gap-3 mb-2 last:mb-0 hover:bg-slate-800/30 px-2 py-1 rounded transition-colors cursor-pointer"
+                className="flex items-start gap-3 mb-2 last:mb-0 px-2 py-1 rounded transition-colors cursor-pointer"
+                style={{
+                  backgroundColor: hoveredError === error
+                    ? (theme === 'dark' ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.6)')
+                    : 'transparent'
+                }}
                 onMouseEnter={() => setHoveredError(error)}
                 onMouseLeave={() => setHoveredError(null)}
               >
-                <span className="text-amber-500 shrink-0 mt-0.5">⚠️</span>
+                <span className="shrink-0 mt-0.5" style={{ color: colors.errorIcon }}>⚠️</span>
                 <div className="flex-1 flex gap-2">
-                  <span className="text-cyan-400 shrink-0">
+                  <span className="shrink-0" style={{ color: colors.errorLocation }}>
                     Ln {error.line + 1}, M{error.measureIndex + 1}:
                   </span>
-                  <span className="text-amber-300">{error.message}</span>
+                  <span style={{ color: colors.errorMessage }}>{error.message}</span>
                 </div>
               </div>
             ))}
