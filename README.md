@@ -10,7 +10,8 @@ A React component for editing ABC music notation with syntax highlighting, autoc
 
 ## Features
 
-- **Syntax Highlighting**: Color-coded ABC notation elements
+- **Light & Dark Mode**: Built-in theme support with light mode as default
+- **Syntax Highlighting**: Color-coded ABC notation elements optimized for both themes
 - **Line Numbers**: Clear visual reference for navigation
 <img width="739" height="282" alt="スクリーンショット 2025-11-23 14 46 26" src="https://github.com/user-attachments/assets/e69f6bf6-3ea8-45d9-b194-3d5a6e4c5385" />
 
@@ -85,6 +86,36 @@ export default App;
 
 **Note:** Styles are automatically included - no need to import CSS separately!
 
+### With Theme Support
+
+```tsx
+import { useState } from 'react';
+import { AbcEditor, AbcPreview, type Theme } from '@ovnonvo/abc-editor';
+
+function App() {
+  const [abcCode, setAbcCode] = useState(`X:1
+T:Untitled
+M:4/4
+K:C
+C D E F | G A B c |`);
+  const [theme, setTheme] = useState<Theme>('light'); // 'light' or 'dark'
+
+  return (
+    <div>
+      <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
+        Toggle Theme
+      </button>
+      <div style={{ display: 'flex', height: '100vh' }}>
+        <AbcEditor value={abcCode} onChange={setAbcCode} theme={theme} />
+        <AbcPreview value={abcCode} theme={theme} />
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
+
 ### Components
 
 #### `AbcEditor`
@@ -94,13 +125,15 @@ The main editor component with syntax highlighting and validation.
 **Props:**
 - `value` (string): The ABC notation code
 - `onChange` ((value: string) => void): Callback when the code changes
+- `theme?` ('light' | 'dark'): Editor theme (default: 'light')
 
 **Features:**
 - Line numbers
-- Syntax highlighting
+- Syntax highlighting with theme support
 - Autocomplete (type `/` to trigger)
 - Real-time validation
 - Error display with hover highlighting
+- Light and dark mode
 
 #### `AbcPreview`
 
@@ -108,6 +141,7 @@ Preview component that renders the ABC notation as sheet music.
 
 **Props:**
 - `value` (string): The ABC notation code to render
+- `theme?` ('light' | 'dark'): Preview theme (default: 'light')
 
 ### Autocomplete
 
@@ -186,11 +220,18 @@ const errors = validateAbc(abcCode);
 
 ```tsx
 import type {
+  Theme,
   AbcField,
   AbcFieldKey,
   ValidationError,
 } from '@ovnonvo/abc-editor';
 ```
+
+**Available Types:**
+- `Theme`: 'light' | 'dark' - Theme configuration for components
+- `AbcField`: ABC notation field structure
+- `AbcFieldKey`: ABC field key types (X:, T:, M:, K:, etc.)
+- `ValidationError`: Validation error structure
 
 ## Styling
 
@@ -198,12 +239,22 @@ The package automatically injects all necessary styles when you import the compo
 
 **Note:** You don't need to install or configure Tailwind CSS in your project. All styles are automatically included and injected when you use the components.
 
-If you need custom styling, you can override the CSS variables or add your own CSS rules:
+### Theme Customization
+
+The editor comes with built-in light and dark themes. Light mode is the default. You can customize the theme colors by overriding the CSS variables:
 
 ```css
+/* Light mode (default) */
 :root {
-  --abc-key: #your-color;
-  --abc-note: #your-color;
+  --abc-key: #0066cc;
+  --abc-note: #000000;
+  /* ... other variables */
+}
+
+/* Dark mode */
+[data-theme="dark"] {
+  --abc-key: #7ad7ff;
+  --abc-note: #f8fbff;
   /* ... other variables */
 }
 ```
