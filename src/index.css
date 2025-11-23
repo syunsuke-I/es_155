@@ -85,7 +85,7 @@
   fill: #000000 !important;
 }
 
-[data-theme="dark"] .abc-preview svg text {
+.abc-preview[data-theme="dark"] svg text {
   fill: #ffffff !important;
 }
 
