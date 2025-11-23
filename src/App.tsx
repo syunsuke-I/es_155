@@ -4,7 +4,7 @@ import { AbcPreview } from "./components/AbcPreview";
 
 function App() {
   const [abc, setAbc] = useState(`X:1
-T:タイトル
+T:Untitled
 M:4/4
 K:C
 C D E F | G A B c |`);

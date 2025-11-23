@@ -6,7 +6,7 @@ export const ABC_COMMANDS: Suggestion[] = [
     value: '/header',
     description: 'Insert basic ABC header template',
     template: `X:1
-T:タイトル
+T:Untitled
 M:4/4
 L:1/4
 K:C
