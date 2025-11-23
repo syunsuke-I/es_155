@@ -25,9 +25,9 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
   // テーマごとの色設定
   const colors = theme === 'dark'
     ? {
-        bg: '#0f0f0f',
-        editorBg: '#1a1a1a',
-        lineNumBg: '#0a0a0a',
+        bg: '#1a1a1a',
+        editorBg: '#262626',
+        lineNumBg: '#0f0f0f',
         caretColor: '#fff',
         placeholderColor: '#64748b',
         errorHeader: '#94a3b8',
