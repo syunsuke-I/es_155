@@ -1,0 +1,47 @@
+# Development files
+.vscode
+.idea
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+coverage
+.nyc_output
+
+# Source files (only dist is needed)
+node_modules
+.git
+.gitignore
+
+# Build artifacts
+*.tsbuildinfo
+.tmp
+
+# Development config
+vite.config.ts
+tsconfig.*.json
+eslint.config.js
+vitest.config.ts
+postcss.config.js
+tailwind.config.js
+
+# Example/demo files
+index.html
+public
+src/main.tsx
+src/App.tsx
+src/App.css
+src/assets
+
+# SVG files in dist (vite.svg)
+dist/**/*.svg
+
+# Documentation (keep README.md)
+docs
+
+# Claude config
+.claude

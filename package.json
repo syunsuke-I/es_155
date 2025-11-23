@@ -1,22 +1,65 @@
 {
-  "name": "es-175",
-  "private": true,
-  "version": "0.0.0",
+  "name": "@yourusername/abc-editor",
+  "version": "0.1.0",
+  "description": "A React component for editing ABC music notation with syntax highlighting, autocomplete, and validation",
   "type": "module",
+  "main": "./dist/abc-editor.cjs.js",
+  "module": "./dist/abc-editor.es.js",
+  "types": "./dist/lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib/index.d.ts",
+      "import": "./dist/abc-editor.es.js",
+      "require": "./dist/abc-editor.cjs.js"
+    },
+    "./styles": "./dist/style.css"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "abc",
+    "music",
+    "notation",
+    "editor",
+    "react",
+    "component",
+    "syntax-highlighting",
+    "autocomplete",
+    "validation"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/abc-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/abc-editor/issues"
+  },
+  "homepage": "https://github.com/yourusername/abc-editor#readme",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -p tsconfig.lib.json && vite build && rm -f dist/*.svg",
+    "build:types": "tsc -p tsconfig.lib.json",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "prepublishOnly": "npm run build"
   },
-  "dependencies": {
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "abcjs": "^6.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
     "abcjs": "^6.5.2",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
-  },
-  "devDependencies": {
+    "react-dom": "^19.2.0",
     "@eslint/js": "^9.39.1",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^24.10.1",

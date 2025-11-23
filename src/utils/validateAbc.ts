@@ -1,4 +1,4 @@
-import { ABC_FIELD_PATTERN, ABC_NOTE_PATTERN, ABC_REST_PATTERN, ABC_DURATION_PATTERN } from '../types/abc';
+import { ABC_FIELD_PATTERN, ABC_NOTE_PATTERN, ABC_REST_PATTERN } from '../types/abc';
 
 export interface ValidationError {
   line: number; // 行番号（0始まり）
@@ -185,7 +185,6 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
     } else if (char === '[') {
       // 和音の開始
       let j = i + 1;
-      let chordBeats = 0;
 
       // ] まで読み進めて、和音内の音符を解析
       while (j < measureContent.length && measureContent[j] !== ']') {
