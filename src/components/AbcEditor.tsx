@@ -39,7 +39,7 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
     : {
         bg: '#f8f9fa',
         editorBg: '#ffffff',
-        lineNumBg: '#fafafa',
+        lineNumBg: '#e8e8e8',
         caretColor: '#000',
         placeholderColor: '#999999',
         errorHeader: '#64748b',
