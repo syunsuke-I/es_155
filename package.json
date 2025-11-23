@@ -81,5 +81,8 @@
     "vite": "^7.2.4",
     "vite-plugin-css-injected-by-js": "^3.5.2",
     "vitest": "^4.0.12"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0"
   }
 }
