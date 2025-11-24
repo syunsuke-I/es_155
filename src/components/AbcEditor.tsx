@@ -30,23 +30,35 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
         lineNumBg: '#0f0f0f',
         caretColor: '#fff',
         placeholderColor: '#64748b',
-        errorHeader: '#94a3b8',
+        errorBg: '#1a1a1a',
+        errorBorder: '#2d2d2d',
+        errorHeader: '#ffffff',
+        errorBadgeBg: '#dc2626',
+        errorBadgeText: '#ffffff',
         errorIcon: '#f59e0b',
         errorLocation: '#22d3ee',
-        errorMessage: '#fcd34d',
-        errorHighlight: 'rgba(245, 158, 11, 0.2)'
+        errorMessage: '#e5e7eb',
+        errorHighlight: 'rgba(245, 158, 11, 0.2)',
+        errorHoverBg: 'rgba(51, 65, 85, 0.4)',
+        errorItemBorder: 'rgba(255, 255, 255, 0.05)'
       }
     : {
         bg: '#f8f9fa',
         editorBg: '#ffffff',
-        lineNumBg: '#e8e8e8',
+        lineNumBg: '#ffffff',
         caretColor: '#000',
         placeholderColor: '#999999',
-        errorHeader: '#64748b',
-        errorIcon: '#d97706',
+        errorBg: '#ffffff',
+        errorBorder: '#e5e7eb',
+        errorHeader: '#1f2937',
+        errorBadgeBg: '#dc2626',
+        errorBadgeText: '#ffffff',
+        errorIcon: '#dc2626',
         errorLocation: '#0891b2',
-        errorMessage: '#b45309',
-        errorHighlight: '#fde047'
+        errorMessage: '#1f2937',
+        errorHighlight: '#fde047',
+        errorHoverBg: 'rgba(254, 202, 202, 0.4)',
+        errorItemBorder: 'rgba(220, 38, 38, 0.1)'
       };
 
   // オートコンプリート機能
@@ -64,6 +76,16 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
     if (textareaRef.current && lineNumbersRef.current && highlightRef.current) {
       lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
       highlightRef.current.scrollTop = textareaRef.current.scrollTop;
+    }
+  };
+
+  const handleErrorClick = (error: ValidationError) => {
+    if (textareaRef.current) {
+      const lines = value.split('\n');
+      const position = lines.slice(0, error.line).join('\n').length + (error.line > 0 ? 1 : 0);
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(position, position);
+      textareaRef.current.scrollTop = textareaRef.current.scrollHeight * (error.line / lines.length);
     }
   };
 
@@ -165,33 +187,123 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
         {/* エラー表示エリア */}
         {validationErrors.length > 0 && (
           <div
-            className="px-4 py-3 text-xs font-mono overflow-auto"
-            style={{ backgroundColor: colors.lineNumBg, maxHeight: '8rem' }}
+            className="px-4 py-3 text-xs font-mono overflow-auto border-t"
+            style={{
+              backgroundColor: colors.errorBg,
+              borderColor: colors.errorBorder,
+              maxHeight: '12rem',
+              scrollbarWidth: 'thin',
+              scrollbarColor: `${colors.errorIcon} transparent`
+            }}
           >
-            <div className="mb-2 text-[10px] uppercase tracking-wide" style={{ color: colors.errorHeader }}>
-              Validation Errors ({validationErrors.length})
-            </div>
-            {validationErrors.map((error, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-3 mb-2 last:mb-0 px-2 py-1 rounded transition-colors cursor-pointer"
-                style={{
-                  backgroundColor: hoveredError === error
-                    ? (theme === 'dark' ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.6)')
-                    : 'transparent'
-                }}
-                onMouseEnter={() => setHoveredError(error)}
-                onMouseLeave={() => setHoveredError(null)}
-              >
-                <span className="shrink-0 mt-0.5" style={{ color: colors.errorIcon }}>⚠️</span>
-                <div className="flex-1 flex gap-2">
-                  <span className="shrink-0" style={{ color: colors.errorLocation }}>
-                    Ln {error.line + 1}, M{error.measureIndex + 1}:
-                  </span>
-                  <span style={{ color: colors.errorMessage }}>{error.message}</span>
-                </div>
+            {/* ヘッダー */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: colors.errorIcon }}
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: colors.errorHeader }}>
+                  Validation Issues
+                </span>
               </div>
-            ))}
+              <div
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{
+                  backgroundColor: colors.errorBadgeBg,
+                  color: colors.errorBadgeText
+                }}
+              >
+                {validationErrors.length}
+              </div>
+            </div>
+
+            {/* エラーリスト */}
+            <div className="space-y-1">
+              {validationErrors.map((error, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 px-3 py-2 rounded-md border cursor-pointer"
+                  style={{
+                    backgroundColor: hoveredError === error ? colors.errorHoverBg : 'transparent',
+                    borderColor: hoveredError === error ? colors.errorIcon : colors.errorItemBorder,
+                    transition: 'all 0.15s ease-in-out',
+                    transform: hoveredError === error ? 'translateX(2px)' : 'translateX(0)'
+                  }}
+                  onMouseEnter={() => setHoveredError(error)}
+                  onMouseLeave={() => setHoveredError(null)}
+                  onClick={() => handleErrorClick(error)}
+                >
+                  {/* アイコン */}
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0 mt-0.5"
+                    style={{ color: colors.errorIcon }}
+                  >
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+
+                  {/* エラー内容 */}
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span
+                        className="font-semibold text-[11px] px-1.5 py-0.5 rounded"
+                        style={{
+                          color: colors.errorLocation,
+                          backgroundColor: theme === 'dark' ? 'rgba(34, 211, 238, 0.1)' : 'rgba(8, 145, 178, 0.1)'
+                        }}
+                      >
+                        Line {error.line + 1}, Measure {error.measureIndex + 1}
+                      </span>
+                    </div>
+                    <span className="text-[11px] leading-relaxed" style={{ color: colors.errorMessage }}>
+                      {error.message}
+                    </span>
+                  </div>
+
+                  {/* ジャンプアイコン */}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0 mt-1 opacity-50"
+                    style={{
+                      color: colors.errorIcon,
+                      opacity: hoveredError === error ? 1 : 0.3,
+                      transition: 'opacity 0.15s ease-in-out'
+                    }}
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

@@ -24,9 +24,6 @@ A React component for editing ABC music notation with syntax highlighting, autoc
 - **Error Highlighting**: Hover over validation errors to highlight the problematic measure
 <img width="956" height="987" alt="スクリーンショット 2025-11-23 14 44 14" src="https://github.com/user-attachments/assets/50d7f3c4-5c7e-47df-8237-cdebb2ce086f" />
 
-- **Preview**: Live preview of music notation using abcjs
-<img width="1900" height="984" alt="スクリーンショット 2025-11-23 14 48 34" src="https://github.com/user-attachments/assets/f2af8ae6-30c5-46c9-b905-653cdacd4cf5" />
-
 
 ## Installation
 
@@ -47,15 +44,14 @@ This package requires the following peer dependencies:
 ```json
 {
   "react": "^18.0.0 || ^19.0.0",
-  "react-dom": "^18.0.0 || ^19.0.0",
-  "abcjs": "^6.0.0"
+  "react-dom": "^18.0.0 || ^19.0.0"
 }
 ```
 
 Install them if you haven't already:
 
 ```bash
-npm install react react-dom abcjs
+npm install react react-dom
 ```
 
 ## Usage
@@ -64,7 +60,7 @@ npm install react react-dom abcjs
 
 ```tsx
 import { useState } from 'react';
-import { AbcEditor, AbcPreview } from '@ovnonvo/abc-editor';
+import { AbcEditor } from '@ovnonvo/abc-editor';
 
 function App() {
   const [abcCode, setAbcCode] = useState(`X:1
@@ -74,9 +70,8 @@ K:C
 C D E F | G A B c |`);
 
   return (
-    <div style={{ display: 'flex', height: '100vh' }}>
+    <div style={{ height: '100vh' }}>
       <AbcEditor value={abcCode} onChange={setAbcCode} />
-      <AbcPreview value={abcCode} />
     </div>
   );
 }
@@ -90,7 +85,7 @@ export default App;
 
 ```tsx
 import { useState } from 'react';
-import { AbcEditor, AbcPreview, type Theme } from '@ovnonvo/abc-editor';
+import { AbcEditor, type Theme } from '@ovnonvo/abc-editor';
 
 function App() {
   const [abcCode, setAbcCode] = useState(`X:1
@@ -105,9 +100,8 @@ C D E F | G A B c |`);
       <button onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
         Toggle Theme
       </button>
-      <div style={{ display: 'flex', height: '100vh' }}>
+      <div style={{ height: '100vh' }}>
         <AbcEditor value={abcCode} onChange={setAbcCode} theme={theme} />
-        <AbcPreview value={abcCode} theme={theme} />
       </div>
     </div>
   );
@@ -135,13 +129,35 @@ The main editor component with syntax highlighting and validation.
 - Error display with hover highlighting
 - Light and dark mode
 
-#### `AbcPreview`
+### Adding Preview Functionality
 
-Preview component that renders the ABC notation as sheet music.
+This package focuses on the editor functionality. For music notation preview, you can integrate a rendering library like `abcjs`:
 
-**Props:**
-- `value` (string): The ABC notation code to render
-- `theme?` ('light' | 'dark'): Preview theme (default: 'light')
+```tsx
+import { useEffect, useRef } from 'react';
+import abcjs from 'abcjs';
+
+function AbcPreview({ value, theme = 'light' }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (ref.current) {
+      abcjs.renderAbc(ref.current, value, {
+        responsive: 'resize',
+        foregroundColor: theme === 'dark' ? '#ffffff' : '#000000',
+      });
+    }
+  }, [value, theme]);
+
+  return <div ref={ref} />;
+}
+```
+
+Install abcjs separately:
+
+```bash
+npm install abcjs
+```
 
 ### Autocomplete
 
@@ -287,6 +303,5 @@ Contributions are welcome! Please open an issue or submit a pull request.
 
 Built with:
 - [React](https://reactjs.org/)
-- [abcjs](https://www.abcjs.net/)
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)

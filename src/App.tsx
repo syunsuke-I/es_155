@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { AbcEditor } from "./components/AbcEditor";
-import { AbcPreview } from "./components/AbcPreview";
 import type { Theme } from "./types/abc";
 
 function App() {
@@ -12,8 +11,8 @@ F A D E  D A G E |`);
   const [theme, setTheme] = useState<Theme>('light');
 
   const colors = theme === 'dark'
-    ? { bg: '#0a0a0a', headerBg: '#0a0a0a', previewBg: '#1a1a1a', previewInner: '#262626' }
-    : { bg: '#f8f9fa', headerBg: '#e9ecef', previewBg: '#f8f9fa', previewInner: '#ffffff' };
+    ? { bg: '#0a0a0a', headerBg: '#0a0a0a' }
+    : { bg: '#f8f9fa', headerBg: '#e9ecef' };
 
   return (
     <div className="h-screen flex flex-col bg-slate-950" style={{ backgroundColor: colors.bg }}>
@@ -31,18 +30,8 @@ F A D E  D A G E |`);
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col-reverse md:flex-row">
-        {/* 左側: エディタ */}
-        <div className="w-full md:w-1/2 h-2/3 md:h-full">
-          <AbcEditor value={abc} onChange={setAbc} theme={theme} />
-        </div>
-
-        {/* 右側: プレビュー */}
-        <div className="w-full md:w-1/2 h-1/3 md:h-full flex flex-col p-4" style={{ backgroundColor: colors.previewBg }}>
-          <div className="w-full h-full rounded-lg overflow-auto p-4 shadow-lg" style={{ backgroundColor: colors.previewInner }}>
-            <AbcPreview value={abc} theme={theme} />
-          </div>
-        </div>
+      <div className="flex-1">
+        <AbcEditor value={abc} onChange={setAbc} theme={theme} />
       </div>
     </div>
   );

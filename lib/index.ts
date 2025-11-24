@@ -3,7 +3,6 @@ import '../src/index.css';
 
 // Main Components
 export { AbcEditor } from '../src/components/AbcEditor';
-export { AbcPreview } from '../src/components/AbcPreview';
 export { SuggestionList } from '../src/components/SuggestionList';
 
 // Hooks
