@@ -4,7 +4,7 @@ A React component for editing ABC music notation with syntax highlighting, autoc
 
 ## You can try it on web
 
-[Here](https://abc-editor-theta.vercel.app/)
+[Here](https://abce-demo.vercel.app/)
 
 
 
