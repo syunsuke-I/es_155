@@ -120,150 +120,232 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
   };
 
   return (
-    <div className="w-full h-full flex flex-col p-4" data-theme={theme} style={{ backgroundColor: colors.bg }}>
-      <div className="w-full flex-1 flex flex-col rounded-lg overflow-hidden shadow-lg" style={{ backgroundColor: colors.editorBg }}>
-        {/* エディタ部分 */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* 行番号 */}
-          <div
-            ref={lineNumbersRef}
-            className="overflow-hidden select-none"
-            style={{
-              ...sharedTextStyle,
-              backgroundColor: colors.lineNumBg,
-              minWidth: '3rem',
-              padding: '16px 8px 16px 8px',
-              color: '#6b7280',
-              borderRightColor: colors.lineNumBorder,
-              borderRightStyle: 'solid',
-              borderRightWidth: '1px',
-            }}
-          >
-            {lineNumbers.split('\n').map((num, i) => (
-              <div key={i} style={{ textAlign: 'center' }}>{num}</div>
-            ))}
-          </div>
-
-          {/* エディタエリア */}
-          <div className="flex-1 relative">
-            {/* シンタックスハイライト背景 */}
-            <div
-              ref={highlightRef}
-              className="absolute inset-0 overflow-hidden pointer-events-none"
-              style={{
-                ...sharedTextStyle,
-                backgroundColor: colors.editorBg,
-                opacity: hoveredError ? 0.3 : 1,
-                transition: 'opacity 0.2s',
-              }}
-              dangerouslySetInnerHTML={{ __html: highlightedCode }}
-            />
-
-            {/* ホバー中の小節ハイライト */}
-            {hoveredError && (() => {
-              const lines = value.split('\n');
-              const errorLine = lines[hoveredError.line] || '';
-              const errorMeasure = errorLine.substring(hoveredError.startCol, hoveredError.endCol);
-              const highlightedMeasure = highlightAbc(errorMeasure);
-
-              return (
-                <div
-                  className="absolute inset-0 overflow-hidden pointer-events-none"
-                  style={{
-                    ...sharedTextStyle,
-                    backgroundColor: 'transparent',
-                  }}
-                >
-                  {lines.map((line, lineIndex) => {
-                    if (lineIndex === hoveredError.line) {
-                      const before = line.substring(0, hoveredError.startCol);
-                      const after = line.substring(hoveredError.endCol);
-
-                      return (
-                        <div key={lineIndex}>
-                          <span style={{ visibility: 'hidden' }}>{before}</span>
-                          <span
-                            style={{
-                              backgroundColor: colors.errorHighlight,
-                              borderRadius: '2px',
-                              padding: '1px 2px',
-                            }}
-                            dangerouslySetInnerHTML={{ __html: highlightedMeasure }}
-                          />
-                          <span style={{ visibility: 'hidden' }}>{after}</span>
-                        </div>
-                      );
-                    }
-                    return <div key={lineIndex} style={{ visibility: 'hidden' }}>{line || '\u200B'}</div>;
-                  })}
-                </div>
-              );
-            })()}
-
-            {/* テキストエリア */}
-            <textarea
-              ref={textareaRef}
-              className="absolute inset-0 w-full h-full resize-none"
-              style={{
-                ...sharedTextStyle,
-                backgroundColor: 'transparent',
-                color: 'transparent',
-                caretColor: colors.caretColor,
-                // ブラウザ固有のスタイルをリセット
-                WebkitAppearance: 'none',
-                appearance: 'none',
-              }}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onScroll={handleScroll}
-              onKeyDown={handleKeyDown}
-              spellCheck={false}
-              autoCapitalize="off"
-              autoComplete="off"
-              autoCorrect="off"
-              placeholder="Type /header to insert template..."
-            />
-
-            {/* オートコンプリート候補リスト */}
-            {isOpen && (
-              <SuggestionList
-                suggestions={suggestions}
-                selectedIndex={selectedIndex}
-                position={position}
-                onSelect={selectSuggestion}
-                onMouseEnter={handleMouseEnter}
-              />
-            )}
-          </div>
+    <div className="w-full h-full flex flex-col rounded-lg overflow-hidden shadow-lg" data-theme={theme} style={{ backgroundColor: colors.editorBg }}>
+      {/* エディタ部分 */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* 行番号 */}
+        <div
+          ref={lineNumbersRef}
+          className="overflow-hidden select-none"
+          style={{
+            ...sharedTextStyle,
+            backgroundColor: colors.lineNumBg,
+            minWidth: '3rem',
+            padding: '16px 8px 16px 8px',
+            color: '#6b7280',
+            borderRightColor: colors.lineNumBorder,
+            borderRightStyle: 'solid',
+            borderRightWidth: '1px',
+          }}
+        >
+          {lineNumbers.split('\n').map((num, i) => (
+            <div key={i} style={{ textAlign: 'center' }}>{num}</div>
+          ))}
         </div>
 
-        {/* エラー表示エリア */}
-        {validationErrors.length > 0 && (
-          <div className="flex">
-            {/* 行番号幅分の空白 */}
-            <div
-              style={{
-                backgroundColor: colors.lineNumBg,
-                minWidth: '3rem',
-                borderRightColor: colors.lineNumBorder,
-                borderRightStyle: 'solid',
-                borderRightWidth: '1px'
-              }}
+        {/* エディタエリア */}
+        <div className="flex-1 relative">
+          {/* シンタックスハイライト背景 */}
+          <div
+            ref={highlightRef}
+            className="absolute inset-0 overflow-hidden pointer-events-none"
+            style={{
+              ...sharedTextStyle,
+              backgroundColor: colors.editorBg,
+              opacity: hoveredError ? 0.3 : 1,
+              transition: 'opacity 0.2s',
+            }}
+            dangerouslySetInnerHTML={{ __html: highlightedCode }}
+          />
+
+          {/* ホバー中の小節ハイライト */}
+          {hoveredError && (() => {
+            const lines = value.split('\n');
+            const errorLine = lines[hoveredError.line] || '';
+            const errorMeasure = errorLine.substring(hoveredError.startCol, hoveredError.endCol);
+            const highlightedMeasure = highlightAbc(errorMeasure);
+
+            return (
+              <div
+                className="absolute inset-0 overflow-hidden pointer-events-none"
+                style={{
+                  ...sharedTextStyle,
+                  backgroundColor: 'transparent',
+                }}
+              >
+                {lines.map((line, lineIndex) => {
+                  if (lineIndex === hoveredError.line) {
+                    const before = line.substring(0, hoveredError.startCol);
+                    const after = line.substring(hoveredError.endCol);
+
+                    return (
+                      <div key={lineIndex}>
+                        <span style={{ visibility: 'hidden' }}>{before}</span>
+                        <span
+                          style={{
+                            backgroundColor: colors.errorHighlight,
+                            borderRadius: '2px',
+                            padding: '1px 2px',
+                          }}
+                          dangerouslySetInnerHTML={{ __html: highlightedMeasure }}
+                        />
+                        <span style={{ visibility: 'hidden' }}>{after}</span>
+                      </div>
+                    );
+                  }
+                  return <div key={lineIndex} style={{ visibility: 'hidden' }}>{line || '\u200B'}</div>;
+                })}
+              </div>
+            );
+          })()}
+
+          {/* テキストエリア */}
+          <textarea
+            ref={textareaRef}
+            className="absolute inset-0 w-full h-full resize-none"
+            style={{
+              ...sharedTextStyle,
+              backgroundColor: 'transparent',
+              color: 'transparent',
+              caretColor: colors.caretColor,
+              // ブラウザ固有のスタイルをリセット
+              WebkitAppearance: 'none',
+              appearance: 'none',
+            }}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onScroll={handleScroll}
+            onKeyDown={handleKeyDown}
+            spellCheck={false}
+            autoCapitalize="off"
+            autoComplete="off"
+            autoCorrect="off"
+            placeholder="Type /header to insert template..."
+          />
+
+          {/* オートコンプリート候補リスト */}
+          {isOpen && (
+            <SuggestionList
+              suggestions={suggestions}
+              selectedIndex={selectedIndex}
+              position={position}
+              onSelect={selectSuggestion}
+              onMouseEnter={handleMouseEnter}
             />
-            {/* エラー内容 */}
-            <div
-              className="flex-1 px-4 py-3 text-xs font-mono overflow-auto border-t"
-              style={{
-                backgroundColor: colors.errorBg,
-                borderColor: colors.errorBorder,
-                maxHeight: '12rem',
-                scrollbarWidth: 'thin',
-                scrollbarColor: `${colors.errorIcon} transparent`
-              }}
-            >
-              {/* ヘッダー */}
-              <div className="flex items-center gap-2 mb-3">
-                <div className="flex items-center gap-2">
+          )}
+        </div>
+      </div>
+
+      {/* エラー表示エリア */}
+      {validationErrors.length > 0 && (
+        <div className="flex">
+          {/* 行番号幅分の空白 */}
+          <div
+            style={{
+              backgroundColor: colors.lineNumBg,
+              minWidth: '3rem',
+              borderRightColor: colors.lineNumBorder,
+              borderRightStyle: 'solid',
+              borderRightWidth: '1px'
+            }}
+          />
+          {/* エラー内容 */}
+          <div
+            className="flex-1 px-4 py-3 text-xs font-mono overflow-auto border-t"
+            style={{
+              backgroundColor: colors.errorBg,
+              borderColor: colors.errorBorder,
+              maxHeight: '12rem',
+              scrollbarWidth: 'thin',
+              scrollbarColor: `${colors.errorIcon} transparent`
+            }}
+          >
+            {/* ヘッダー */}
+            <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: colors.errorIcon }}
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: colors.errorHeader }}>
+                  Validation Issues
+                </span>
+              </div>
+              <div
+                className="px-2 py-0.5 rounded-full text-[10px] font-bold"
+                style={{
+                  backgroundColor: colors.errorBadgeBg,
+                  color: colors.errorBadgeText
+                }}
+              >
+                {validationErrors.length}
+              </div>
+            </div>
+
+            {/* エラーリスト */}
+            <div className="space-y-1">
+              {validationErrors.map((error, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 px-3 py-2 rounded-md border cursor-pointer"
+                  style={{
+                    backgroundColor: hoveredError === error ? colors.errorHoverBg : 'transparent',
+                    borderColor: hoveredError === error ? colors.errorIcon : colors.errorItemBorder,
+                    transition: 'all 0.15s ease-in-out',
+                    transform: hoveredError === error ? 'translateX(2px)' : 'translateX(0)'
+                  }}
+                  onMouseEnter={() => setHoveredError(error)}
+                  onMouseLeave={() => setHoveredError(null)}
+                  onClick={() => handleErrorClick(error)}
+                >
+                  {/* アイコン */}
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0 mt-0.5"
+                    style={{ color: colors.errorIcon }}
+                  >
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+
+                  {/* エラー内容 */}
+                  <div className="flex-1 flex flex-col gap-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <span
+                        className="font-semibold text-[11px] px-1.5 py-0.5 rounded"
+                        style={{
+                          color: colors.errorLocation,
+                          backgroundColor: theme === 'dark' ? 'rgba(34, 211, 238, 0.1)' : 'rgba(8, 145, 178, 0.1)'
+                        }}
+                      >
+                        Line {error.line + 1}, Measure {error.measureIndex + 1}
+                      </span>
+                    </div>
+                    <span className="text-[11px] leading-relaxed" style={{ color: colors.errorMessage }}>
+                      {error.message}
+                    </span>
+                  </div>
+
+                  {/* ジャンプアイコン */}
                   <svg
                     width="14"
                     height="14"
@@ -273,106 +355,22 @@ export const AbcEditor = ({ value, onChange, theme = 'light' }: AbcEditorProps) 
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    style={{ color: colors.errorIcon }}
-                  >
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                  <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: colors.errorHeader }}>
-                    Validation Issues
-                  </span>
-                </div>
-                <div
-                  className="px-2 py-0.5 rounded-full text-[10px] font-bold"
-                  style={{
-                    backgroundColor: colors.errorBadgeBg,
-                    color: colors.errorBadgeText
-                  }}
-                >
-                  {validationErrors.length}
-                </div>
-              </div>
-
-              {/* エラーリスト */}
-              <div className="space-y-1">
-                {validationErrors.map((error, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-3 px-3 py-2 rounded-md border cursor-pointer"
+                    className="shrink-0 mt-1 opacity-50"
                     style={{
-                      backgroundColor: hoveredError === error ? colors.errorHoverBg : 'transparent',
-                      borderColor: hoveredError === error ? colors.errorIcon : colors.errorItemBorder,
-                      transition: 'all 0.15s ease-in-out',
-                      transform: hoveredError === error ? 'translateX(2px)' : 'translateX(0)'
+                      color: colors.errorIcon,
+                      opacity: hoveredError === error ? 1 : 0.3,
+                      transition: 'opacity 0.15s ease-in-out'
                     }}
-                    onMouseEnter={() => setHoveredError(error)}
-                    onMouseLeave={() => setHoveredError(null)}
-                    onClick={() => handleErrorClick(error)}
                   >
-                    {/* アイコン */}
-                    <svg
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="shrink-0 mt-0.5"
-                      style={{ color: colors.errorIcon }}
-                    >
-                      <circle cx="12" cy="12" r="10"/>
-                      <line x1="12" y1="8" x2="12" y2="12"/>
-                      <line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-
-                    {/* エラー内容 */}
-                    <div className="flex-1 flex flex-col gap-1">
-                      <div className="flex items-baseline gap-2 flex-wrap">
-                        <span
-                          className="font-semibold text-[11px] px-1.5 py-0.5 rounded"
-                          style={{
-                            color: colors.errorLocation,
-                            backgroundColor: theme === 'dark' ? 'rgba(34, 211, 238, 0.1)' : 'rgba(8, 145, 178, 0.1)'
-                          }}
-                        >
-                          Line {error.line + 1}, Measure {error.measureIndex + 1}
-                        </span>
-                      </div>
-                      <span className="text-[11px] leading-relaxed" style={{ color: colors.errorMessage }}>
-                        {error.message}
-                      </span>
-                    </div>
-
-                    {/* ジャンプアイコン */}
-                    <svg
-                      width="14"
-                      height="14"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="shrink-0 mt-1 opacity-50"
-                      style={{
-                        color: colors.errorIcon,
-                        opacity: hoveredError === error ? 1 : 0.3,
-                        transition: 'opacity 0.15s ease-in-out'
-                      }}
-                    >
-                      <line x1="5" y1="12" x2="19" y2="12"/>
-                      <polyline points="12 5 19 12 12 19"/>
-                    </svg>
-                  </div>
-                ))}
-              </div>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </div>
+              ))}
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
