@@ -97,12 +97,20 @@ const extractContext = (code: string): AbcContext => {
  * 音長記号をパースして、基準音符に対する倍率を返す
  * 例: "2" -> 2 (2倍)
  *     "/2" -> 0.5 (半分)
+ *     "/" -> 0.5 (半分、/2の略記)
+ *     "//" -> 0.25 (1/4、//の略記)
  *     "3/2" -> 1.5 (1.5倍)
  *     "" -> 1 (倍率なし)
  */
 const parseDuration = (durationStr: string): number => {
   if (!durationStr) {
     return 1;
+  }
+
+  // / のみ、または // など（A/ = A/2, A// = A/4 の略記）
+  if (/^\/+$/.test(durationStr)) {
+    // / の数だけ2で割る（/ = 1/2, // = 1/4, /// = 1/8）
+    return 1 / Math.pow(2, durationStr.length);
   }
 
   // /2, /4 形式
@@ -153,8 +161,8 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
       if (j < measureContent.length && (measureContent[j] === '/' || /\d/.test(measureContent[j]))) {
         const durationStart = j;
 
-        // /で始まる場合
-        if (measureContent[j] === '/') {
+        // /で始まる場合（連続する / も取得: /, //, /// など）
+        while (j < measureContent.length && measureContent[j] === '/') {
           j++;
         }
 
@@ -212,7 +220,8 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
         if (j < measureContent.length && (measureContent[j] === '/' || /\d/.test(measureContent[j]))) {
           const durationStart = j;
 
-          if (measureContent[j] === '/') {
+          // /で始まる場合（連続する / も取得: /, //, /// など）
+          while (j < measureContent.length && measureContent[j] === '/') {
             j++;
           }
 

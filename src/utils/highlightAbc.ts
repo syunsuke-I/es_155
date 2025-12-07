@@ -246,6 +246,7 @@ export const parseRest = (line: string, index: number): ParseResult | null => {
 
   // 休符の後に続く音長記号をチェック
   let duration = '';
+  const durationStart = j; // 音長記号の開始位置を記憶
 
   // 音長記号の先読み: /?\\d+(/\\d+)?
   if (j < line.length && (line[j] === '/' || /\d/.test(line[j]))) {
@@ -290,6 +291,9 @@ export const parseRest = (line: string, index: number): ParseResult | null => {
       }
 
       html += `<span class="${durationClass}">${escapeHtml(duration)}</span>`;
+    } else {
+      // 音長記号として無効な場合は位置を戻す
+      j = durationStart;
     }
   }
 
