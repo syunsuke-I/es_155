@@ -97,12 +97,20 @@ const extractContext = (code: string): AbcContext => {
  * 音長記号をパースして、基準音符に対する倍率を返す
  * 例: "2" -> 2 (2倍)
  *     "/2" -> 0.5 (半分)
+ *     "/" -> 0.5 (半分、/2の略記)
+ *     "//" -> 0.25 (1/4、//の略記)
  *     "3/2" -> 1.5 (1.5倍)
  *     "" -> 1 (倍率なし)
  */
 const parseDuration = (durationStr: string): number => {
   if (!durationStr) {
     return 1;
+  }
+
+  // / のみ、または // など（A/ = A/2, A// = A/4 の略記）
+  if (/^\/+$/.test(durationStr)) {
+    // / の数だけ2で割る（/ = 1/2, // = 1/4, /// = 1/8）
+    return 1 / Math.pow(2, durationStr.length);
   }
 
   // /2, /4 形式
@@ -122,6 +130,83 @@ const parseDuration = (durationStr: string): number => {
 };
 
 /**
+ * 連符情報を表す型
+ * ABC記法の連符: (p:q:r で p個の音符をq個分の時間で演奏
+ * 簡略形: (3 = (3:2:3 (3連符)、(5 = (5:2:5 など
+ */
+interface TupletInfo {
+  p: number; // 連符内の音符数
+  q: number; // 通常何個分の時間で演奏するか
+  remaining: number; // 残りの音符数
+}
+
+/**
+ * 連符記号をパースして連符情報を返す
+ * 例: "(3" -> { p: 3, q: 2, remaining: 3 } (3連符)
+ *     "(5" -> { p: 5, q: 2, remaining: 5 }
+ *     "(3:2:3" -> { p: 3, q: 2, remaining: 3 }
+ */
+const parseTuplet = (content: string, index: number): { info: TupletInfo; nextIndex: number } | null => {
+  if (content[index] !== '(') return null;
+
+  let j = index + 1;
+  if (j >= content.length || !/\d/.test(content[j])) return null;
+
+  // p を取得
+  let pStr = '';
+  while (j < content.length && /\d/.test(content[j])) {
+    pStr += content[j];
+    j++;
+  }
+  const p = parseInt(pStr, 10);
+
+  // デフォルトの q を決定（ABC標準に基づく）
+  // 2,3,4,6,8は2で割る、5,7,9は通常の時間の比率
+  let q: number;
+  if (p === 2 || p === 4 || p === 8) {
+    q = 3; // 2個を3個分の時間で
+  } else if (p === 3 || p === 6) {
+    q = 2; // 3個を2個分の時間で
+  } else if (p === 5 || p === 7 || p === 9) {
+    q = 2; // 複合拍子の場合は異なるが、簡略化
+  } else {
+    q = 2;
+  }
+
+  let r = p; // デフォルトは p と同じ
+
+  // 拡張形式 (p:q または (p:q:r をチェック
+  if (j < content.length && content[j] === ':') {
+    j++;
+    let qStr = '';
+    while (j < content.length && /\d/.test(content[j])) {
+      qStr += content[j];
+      j++;
+    }
+    if (qStr) {
+      q = parseInt(qStr, 10);
+    }
+
+    if (j < content.length && content[j] === ':') {
+      j++;
+      let rStr = '';
+      while (j < content.length && /\d/.test(content[j])) {
+        rStr += content[j];
+        j++;
+      }
+      if (rStr) {
+        r = parseInt(rStr, 10);
+      }
+    }
+  }
+
+  return {
+    info: { p, q, remaining: r },
+    nextIndex: j,
+  };
+};
+
+/**
  * 小節内の音符・休符を解析して、総拍数を計算する
  *
  * ABC記法の音長計算：
@@ -135,9 +220,29 @@ const parseDuration = (durationStr: string): number => {
 const calculateMeasureBeats = (measureContent: string, context: AbcContext): number => {
   let totalBeats = 0;
   let i = 0;
+  let currentTuplet: TupletInfo | null = null;
 
   while (i < measureContent.length) {
     const char = measureContent[i];
+
+    // 行継続記号はスキップ
+    if (char === '\\') {
+      i++;
+      continue;
+    }
+
+    // 連符記号のチェック
+    if (char === '(') {
+      const tupletResult = parseTuplet(measureContent, i);
+      if (tupletResult) {
+        currentTuplet = tupletResult.info;
+        i = tupletResult.nextIndex;
+        continue;
+      }
+      // 連符でなければスラーなのでスキップ
+      i++;
+      continue;
+    }
 
     // 音符または休符
     if (ABC_NOTE_PATTERN.test(char) || ABC_REST_PATTERN.test(char)) {
@@ -153,8 +258,8 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
       if (j < measureContent.length && (measureContent[j] === '/' || /\d/.test(measureContent[j]))) {
         const durationStart = j;
 
-        // /で始まる場合
-        if (measureContent[j] === '/') {
+        // /で始まる場合（連続する / も取得: /, //, /// など）
+        while (j < measureContent.length && measureContent[j] === '/') {
           j++;
         }
 
@@ -176,7 +281,17 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
 
       // 音符の長さを計算
       const durationMultiplier = parseDuration(duration);
-      const noteLength = context.unitNoteLength * durationMultiplier; // 実際の音符の長さ
+      let noteLength = context.unitNoteLength * durationMultiplier; // 実際の音符の長さ
+
+      // 連符内の場合、長さを調整
+      if (currentTuplet) {
+        noteLength = noteLength * currentTuplet.q / currentTuplet.p;
+        currentTuplet.remaining--;
+        if (currentTuplet.remaining <= 0) {
+          currentTuplet = null;
+        }
+      }
+
       const beatUnit = 1 / context.meter.beatUnit; // 1拍の長さ
       const beats = noteLength / beatUnit; // 拍数
 
@@ -212,7 +327,8 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
         if (j < measureContent.length && (measureContent[j] === '/' || /\d/.test(measureContent[j]))) {
           const durationStart = j;
 
-          if (measureContent[j] === '/') {
+          // /で始まる場合（連続する / も取得: /, //, /// など）
+          while (j < measureContent.length && measureContent[j] === '/') {
             j++;
           }
 
@@ -231,7 +347,17 @@ const calculateMeasureBeats = (measureContent: string, context: AbcContext): num
         }
 
         const durationMultiplier = parseDuration(duration);
-        const noteLength = context.unitNoteLength * durationMultiplier;
+        let noteLength = context.unitNoteLength * durationMultiplier;
+
+        // 連符内の場合、長さを調整
+        if (currentTuplet) {
+          noteLength = noteLength * currentTuplet.q / currentTuplet.p;
+          currentTuplet.remaining--;
+          if (currentTuplet.remaining <= 0) {
+            currentTuplet = null;
+          }
+        }
+
         const beatUnit = 1 / context.meter.beatUnit;
         const beats = noteLength / beatUnit;
 
